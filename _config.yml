@@ -1,0 +1,5 @@
+name: leedavis81 blog
+permalink: /:categories/:title
+#url: http://localhost:4000
+url: http://leedavis81.github.io
+exclude: ["README.md"]

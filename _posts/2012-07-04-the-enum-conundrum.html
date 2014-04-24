@@ -1,0 +1,84 @@
+---
+layout: post
+title: The Enum Conundrum
+categories: []
+tags:
+- enum
+- mysql
+- php
+status: publish
+type: post
+published: true
+meta:
+  _edit_last: '1'
+author:
+  login: leedavis81
+  email: leedavis81@hotmail.com
+  display_name: leedavis81
+  first_name: ''
+  last_name: ''
+---
+<p>So a user signs up and I want to store a status that reflects their account, or at least an identifier representing that status. Their account could be active, disabled (temporarily), pending approval or maybe deleted. Should I use an enum? <a title="8 reasons why enums are evil" href="http://komlenic.com/244/8-reasons-why-mysqls-enum-data-type-is-evil/">I've heard they're evil</a>. Maybe having a reference table with statuses would be better? But now I have to manage a separate table just for that one snippet of data, is that overkill? Could I maybe use that status table for other entities? Or, could I instead just use an integer and reference it on the code level? What is the right solution?</p>
+<p><a style="color: #4a630f; text-decoration: none;" href="http://www.duckheads.co.uk/wp-content/uploads/2012/07/enum_main.png"><img class="alignleft size-full wp-image-291" title="enum_main" src="http://www.duckheads.co.uk/wp-content/uploads/2012/07/enum_main.png" alt="" width="734" height="248" /></a><br />
+<span style="color: #4a630f;"><span style="line-height: 18px;"><br />
+</span></span>This is a problem that has rattled me from when I first began writing code. When you want to restrict your data column to a set list of permitted values there appears a number of ways to do so. The feedback I've had from other developers about these methods range from <em>"extremely bad and shouldn't be implemented"</em> up to <em>"You're over optimising, keep it simple"</em>. I've seen so many solutions to this problem I thought I'd cover some here. Maybe you can give me your opinion on these solutions and what practices you think are best.</p>
+<h2><em>"I used enums all over the place"</em></h2>
+<div>So my journey so far starts off with me as a young techling; To my own detriment I used enums all over the place. They'd appear in most of my tables and I was more than comfortable spitting them out. They did exactly what I needed and appeared as the simplest solution to my problem.</div>
+<div>
+<p><img class="alignleft size-full wp-image-290" title="enum" src="http://www.duckheads.co.uk/wp-content/uploads/2012/07/enum.png" alt="Enum title" width="421" height="39" /></p>
+<p>&nbsp;</p>
+<p>&nbsp;</p>
+<p>However, there was one thing about this implementation that kept niggling at me (besides the fact my queries looked ugly). When I need to display a list of these values within my application (say as options in a selection) then I would have to also declare these on the code level. Its either that or do a round trip to the DB and inspect the values in the table. The latter was obviously expensive and not an ideal implentation. So now they exist to two seperate places. What if someone updates the DB and forgets to change them in the code? Do I need to document this? It would certainly be better if I could have this information in one place, code or DB, but not both.</p>
+<p>Also once a project was released and changes / maintenance needed to take place. Adding an additional option to my set required an entire table alteration. I couldn't just insert another value, the structure of the table needed to change to accommodate it. This isn't a problem in the early stages of development, but once you have an established product and your storing data in the millions of rows this update becomes expensive, even more so if an index is attached to it. So there must be a better way, right?</p>
+<h2><em>"use a reference table"</em></h2>
+<p>How about, I use a reference table! Its relational data after all. This means I no longer have to worry about altering the structure of a column whenever I need to add a new value. I simply insert it and can use it straight away. Now my alter becomes an insert which is far less expensive. It also means I can start adding additional arbitrary data to that status. Say a description, or a helper tip to display to the end user. Perfect if this data needs to updated from a content management system. I also get the option to relate other tables to these statuses, is that a good or a bad thing?</p>
+<p>Either way this still doesn't solve the duplication issue, these values still need to be within the code if I want them displayed as options in a selection. And, I now have an additional JOIN to perform whenever I want to retrieve this data. If I was to apply this mechanism for a users title, role and status I'd end up with an over complicated hierarchy of data for something that seems like it should be flat and simple.</p>
+<p>Its been said that enums offer a performance gain over using a reference table. However some <a title="enums benchmarks" href="http://www.mysqlperformanceblog.com/2008/01/24/enum-fields-vs-varchar-vs-int-joined-table-what-is-faster/">benchmarks state</a> that this isn't necessarily always the case. Should I really be concerned about performance using this implementation?</p>
+<h2><em>"I could use a class constant to represent the enum"</em></h2>
+<p>Pondering on the idea of keeping this information in one place I realised to prevent a round trip to the DB this one place had to be the code. I soon realised I could use a class constant to represent the enum, which also means I can store this value as an integer (or even a tiny integer). Class constants are available in global scope, so its not like I need to worry about accessors or visibility. My data store would also be much slimmer representing the value as an integer instead of a string.</p>
+<p>Also that class could contain helpful methods / arrays detailing what values I have, and any arbitrary data values associated with it. If you use object models to represent your data then you could put this information there. Although often developers like to keep models as data objects with logic, encapsulating only their values and the logic to manipulate them. So you could argue this maybe isn't the correct place for it, but it'll do for the sake of my example.</p>
+<pre>class User
+{
+    const STATUS_ACTIVE = 1;
+    const STATUS_PENDING = 2;
+    const STATUS_DISABLED = 3;
+    const STATUS_DELETED = 4;
+
+    public static $statusNames = array(
+        self::STATUS_ACTIVE =&gt; 'Active',
+        self::STATUS_PENDING =&gt; 'Pending',
+        self::STATUS_DISABLED =&gt; 'Disabled',
+        self::STATUS_DELETED =&gt; 'Deleted'
+    );
+}</pre>
+<p>So with this method I found a whole host of benefits such as;</p>
+<h4>Populating form select options</h4>
+<p>You can use the static array that details the names of the statuses and push it straight into a select object.</p>
+<pre>$select = new Form_Select();
+$select-&gt;addMultiOptions(User::statusNames);</pre>
+<h4>Validating input data</h4>
+<pre>if (array_key_exists($status, User::$statusNames))
+{
+   ....
+}</pre>
+<h4>Displaying the name of your status</h4>
+<p>By adding a small helper function to your model you can now retrieve the name of a status quickly by just passing in the ID. A lot more performant than a round trip to the database.</p>
+<pre>    /**
+    * Get user status name
+    * @param integer $status
+    * @return string $status_name
+    */
+    public static function getUserStatusName($status)
+    {
+        if (isset(self::$statusNames[$status]))
+        {
+            return self::$statusNames[$status];
+        }
+    }
+
+    echo User::getUserStatusName($status_id);</pre>
+<p>But using this mechanism means I lost one major benefit over the reference table implementation. I can no longer add additional arbitrary data to my relation. Sure I can statically add this stuff to my class, but what if it needs to be controlled by a management system.</p>
+<p>So I've come to the conclusion that there is no "right" implementation. There are a whole host of questions you need to answer before you can come to the right decision. Would you like to reuse that enum set with another entity? Is there any other attributes you'd like to associate with each value in your enum set? Do those values need to be editable?</p>
+<p>I'm interested to hear about any other implementations you've used to solve this problem, and how they differ from what I've outlined above.</p>
+<p>&nbsp;</p>
+</div>

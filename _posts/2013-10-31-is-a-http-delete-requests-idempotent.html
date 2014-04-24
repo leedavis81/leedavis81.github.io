@@ -1,0 +1,100 @@
+---
+layout: post
+title: Is a HTTP DELETE request idempotent?
+categories: []
+tags:
+- delete
+- http
+- rest
+status: publish
+type: post
+published: true
+meta:
+  _edit_last: '1'
+  _oembed_26373c314a65fa266b260347734f61c3: <blockquote class="twitter-tweet" width="550"><p><a
+    href="https://twitter.com/lsmith">@lsmith</a> <a href="https://twitter.com/paulscott56">@paulscott56</a>
+    shouldn&#39;t it mean the &quot;end result&quot;. By that definition DELETE is
+    NOT idempotent. Neither is PUT (potentially).</p>&mdash; Lee Davis (@leedavis81)
+    <a href="https://twitter.com/leedavis81/statuses/394822621977526272">October 28,
+    2013</a></blockquote><script async src="//platform.twitter.com/widgets.js" charset="utf-8"></script>
+  _oembed_9b74d92ab38fc9718468c52081602f06: <blockquote class="twitter-tweet" width="550"><p><a
+    href="https://twitter.com/lsmith">@lsmith</a> The definition says &quot;without
+    changing the result&quot;. the HTTP spec says that the result is the state of
+    the app <a href="https://twitter.com/_m6w6">@_m6w6</a> <a href="https://twitter.com/harikt">@harikt</a></p>&mdash;
+    Christophe Coevoet (@Stof70) <a href="https://twitter.com/Stof70/statuses/395193644585480192">October
+    29, 2013</a></blockquote><script async src="//platform.twitter.com/widgets.js"
+    charset="utf-8"></script>
+  _oembed_3dc6a62f83280be28154df7ea9a57646: <blockquote class="twitter-tweet" width="550"><p><a
+    href="https://twitter.com/harikt">@harikt</a> 1st Q that must be answered is if
+    DELETE is idempotent. if it is then the status code shouldn&#39;t change on subsequent
+    delete requests</p>&mdash; Lukas Kahwe Smith (@lsmith) <a href="https://twitter.com/lsmith/statuses/395160219376164864">October
+    29, 2013</a></blockquote><script async src="//platform.twitter.com/widgets.js"
+    charset="utf-8"></script>
+author:
+  login: leedavis81
+  email: leedavis81@hotmail.com
+  display_name: leedavis81
+  first_name: ''
+  last_name: ''
+---
+<p><a href="http://www.duckheads.co.uk/wp-content/uploads/2013/10/http_delete.png"><img class="alignleft  wp-image-515" alt="http_delete" src="http://www.duckheads.co.uk/wp-content/uploads/2013/10/http_delete.png" width="218" height="135" /></a>Recently I had a read of <a title="RESTing with Symfony2" href="http://blog.liip.ch/archive/2013/10/28/resting-with-symfony2.html">an interesting post</a> by Lukas Smith (<a title="Lukas Smith" href="https://twitter.com/lsmith" target="_blank">@lsmith</a>) about the use of the DELETE method when building RESTful services. I wanted to get my thoughts down on this. Mostly to help myself, but if it helps you determine a better approach, then great.</p>
+<p>I'm nowhere near qualified enough to preach, so this is by no means a "you should do it this way / my way is correct post", just food for thought. Besides, there are probably more questions here than answers.</p>
+<h4>"Many people were surprised when I explained that DELETE should be idempotent"</h4>
+<p>So, Lukas highlights an interesting point (<a title="Using HTTP Methods for RESTful Services" href="http://www.restapitutorial.com/lessons/httpmethods.html" target="_blank">which appears to still be debate</a>), about the correct status code to return upon the successful deletion of a resource, and whether that code should ever change for subsequent requests. In general debate is:</p>
+<div style="float: left; width: 250px; border: 1px solid #555; background-color: #fffff; padding: 10px; height: 70px;">If the resource is deleted you can't DELETE it again (as it doesn't exist). So a 404 Not Found is appropriate.</div>
+<div style="float: left; padding: 10px;">vs</div>
+<div style="float: left; width: 250px; border: 1px solid #555; background-color: #fffff; padding: 10px; height: 70px;">The DELETE method is idempotent, so the effects should always be the same. Thus, the status code should not change (use 204 No Content).</div>
+<p><br style="clear:both"><br></p>
+<h4>Idempo-wat?</h4>
+<p>So first off let's try to determine what idempotence is in respect to HTTP and how it applied to REST services. According to <a title="Hypertext Transfer Protocol -- HTTP/1.1" href="http://www.ietf.org/rfc/rfc2616.txt" target="_blank">RFC 2616 (section 9.1.2)</a>:</p>
+<blockquote><p><em>"the side-effects of N &gt; 0 identical requests is the same as for a single request"</em></p></blockquote>
+<p>So if you send a request with exactly the same input, the side-effects will be identical. But...</p>
+<p>https://twitter.com/leedavis81/statuses/394822621977526272</p>
+<h4>Identical result or operation?</h4>
+<p>Initially I found the term "side-effects" threw me. It wasn't clear whether this side-effect needs to be considered for the server or the client. In respect to the DELETE method the initial request (which performs the deletion of a resource) will have completely different side effects to subsequent requests (that won't). Does this mean DELETE is NOT idempotent? Maybe. Maybe it means what it says, or maybe we're misunderstanding something.</p>
+<p>If you were to look up the term idempotence you'll notice in other applications of the word it refers to the "resulting" effect of an operation. Given an input, the same output will always be returned. As a mathematical example: An operation of adding 10 (to any number) is idempotent. The result (per given input) will always be the same. So does idempotence mean identical results or identical operation? I honestly can't find a definitive distinction anywhere. <a title="Idempotence - Computer Science Meaning" href="http://en.wikipedia.org/wiki/Idempotence#Computer_science_meaning">According to wikipedia</a> "it means that the modified state remains the same after the first call". So again, this has no bearing on the operational effect, just the end result. So let's extend our example:</p>
+<pre>function addTen($number)
+{
+    if (time() % 10 === 0)
+    {
+        sleep(5);
+    }
+    return (int) $number + 10;
+}</pre>
+<p>This operation will always return the same result (per input), but it may randomly idle for 5 seconds, meaning the side effects are different. According to Wikipedia this operation<strong> IS idempotent</strong>. The state of $number will always be the same for every call. According to <a title="Hypertext Transfer Protocol -- HTTP/1.1" href="http://www.ietf.org/rfc/rfc2616.txt" target="_blank">RFC 2616</a> this operation<strong> is NOT idempotent </strong>as the operational side effects can vary. I think it would also be correct to say that any operation that needs to check external state before it can determine a result is also not idempotent. Be it the current time, a file in a file system or a record in a database.</p>
+<p>https://twitter.com/Stof70/statuses/395193644585480192</p>
+<h4>Wait, isn't delete an atomic operation?</h4>
+<p>When you perform the delete operation do you need to check the state of that resource first? Do you perform checks such as: Does it exist? Can it be safely deleted? Once you add these conditions you're adding varying side effects to your operation. For example; if its there delete it, if its not then return. Is it this variance that will make your operation non-idempotent? The delete operation itself is idempotent. You can run a delete SQL query or unlink a file irrespective of the existence of a particular resource. How do you need your REST application to work and what pre conditions must you perform before you can safely delete a resource?</p>
+<h4>Ok, so, do we change the status code?</h4>
+<p>If the operation is successful, do we need to tell the client that it was their specific request that caused the deletion? I don't think we do. They just want to know that it's deleted. If someone else beat them to the operation, does it matter to them? If it does, is providing this information with a varying status code the right way to deliver that information? Would an additional HTTP header be more appropriate?</p>
+<p>https://twitter.com/lsmith/statuses/395160219376164864</p>
+<p>I agree with Lukas on this. The status code should be consistent and <strong>NOT be changed</strong> between subsequent requests. However what should that status code be I've yet to determine, but I have some ideas.</p>
+<blockquote><p><strong>Update (1/11/13)</strong>: I no longer believe Lukas' tweet to be true. When thinking about idempotence it's easy to confuse what part the "side-effect" applies.</p>
+<p>"the side-effects of N &gt; 0 identical requests is the same as for a single request"</p>
+<p>After some pondering I believe there are 3 areas the "side-effects" meaning could apply.</p>
+<p>A) The operational side-effects (if resource exists, then do delete / just do delete etc)<br />
+B) The resulting side-effects (the item is deleted - regardless of who did it)<br />
+C) The response side-effects (the HTTP response you send back)</p>
+<p><strong>I've concluded that;</strong></p>
+<ol>
+<li>(C) the response should be independent of (B) the resulting side-effects. If the resulting effects are the same, the response can still be different. Meaning HTTP information / status codes can change for subsequent requests. As Jason pointed out in the comments; a request that performs the same operation can have varying response codes.</li>
+<li>RFC 2616 is NOT referring to (C) the response when referring to identical side-effects</li>
+</ol>
+<p><strong>I believe that;</strong></p>
+<p>RFC 2616 is referring to (B) the resulting side-effects when defining idempotence. This would make DELETE idempotent. If we look at another quote from the RFC:</p>
+<p>"a sequence is non-idempotent if its result depends on a value that is later modified in the same sequence"</p>
+<p>Once you DELETE a resource no subsequent request can modify it's value (as it does not exist) to a different state. The (B) resulting side-effects are always the same.</p></blockquote>
+<h4>204 is definitely right, right?</h4>
+<p>204 seems to be the given status code for whenever a resource is deleted. There's not much debate on this and in W<a title="HTTP status codes" href="http://en.wikipedia.org/wiki/List_of_HTTP_status_codes#2xx_Success">ikipedia</a> it states "Usually used as a response to a successful delete request". But after reading the specification you'll realise it's intended purpose is far broader.</p>
+<blockquote><p>"The server has fulfilled the request but does not need to return an entity-body, and might want to return updated meta information"</p></blockquote>
+<p>This status is designed for any request where no return content was expected other than meta information (which will be sent in headers). So if you wanted to send a request (maybe to set a flag, inform a service of something or just get some updated meta information) and had no expectation of a body in your response, this would be a suitable status code.</p>
+<p>Considering this it's certainly not wrong to use it as the status code quite nicely fits a DELETE operation scenario, but, is there a more appropriate code?</p>
+<h4>Wa'bout 404 and 410 means gone!</h4>
+<p>These essentially mean the exact same thing with slightly different contexts. You would use a 404 in the instance that you either know that the resource is temporarily unavailable or that you don't know that it's NOT permanently unavailable. 410 is appropriate when you know that resource is permanently gone. But all 4xx status code imply that a client error has occurred. And this is where I think it lacks being appropriable.</p>
+<p>If a race condition was hit and somebody else deleted a resource before you do you think it's fair to determine that a client error has occurred? I don't think so. It's still a perfectly valid request, which is why I believe neither of these status codes is appropriate for what is essentially a successful idempotent request. In my opinion 2xx are a far better option.</p>
+<h4>200 Honky dory</h4>
+<p>Good 'ol 200! We love everything it represents. It all just worked. Is this any more appropriate than a 204? Probably not. But I think it equally represents exactly what the message to the client is. Your request was OK. The resource is (or has been) deleted. There's nothing in the specification that says that 200 must have a body in their response. I personally think it's a perfectly acceptable status code to return. Am I happy to swim against the tide on it? Absolutely not. 204 is as equally appropriate and a commonly expected status code on a delete operation.</p>
+<p><strong>tl;dr;</strong> Idempotence means either identical results or operational effects depending on how you interpret it. Whichever way you interpret has no bearing on what status code you should use. I believe returning 4xx's for a successful delete operation is less ideal. 200 or 204 are more appropriate as they imply success. The status code shouldn't change between initial and subsequent requests (I don't believe this is the case anymore - see update (1/11/13).</p>
+<p>&nbsp;</p>
+<p>&nbsp;</p>
+<p>&nbsp;</p>

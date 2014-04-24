@@ -1,0 +1,10 @@
+<ul id="menu" class="nav nav-list">
+	<li class="nav-header">POSTS</li>
+    {% for post in site.posts %}
+        <li>
+            <a href="{{ post.url }}">{{ post.title }}</a>
+            <small>{{ post.date | date: "%B %e, %Y" }}</small>
+            <i>{{ post.summary }}</i>
+        </li>
+    {% endfor %}
+</ul>

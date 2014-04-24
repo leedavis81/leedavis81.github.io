@@ -1,0 +1,105 @@
+---
+layout: post
+title: jQuery UK conference
+categories: []
+tags:
+- conference
+- jquery
+status: publish
+type: post
+published: true
+meta:
+  _edit_last: '1'
+  _wp_old_slug: jquery-uk-conference-the-only-php-developer-in-the-room
+author:
+  login: leedavis81
+  email: leedavis81@hotmail.com
+  display_name: leedavis81
+  first_name: ''
+  last_name: ''
+---
+<p><a href="http://www.duckheads.co.uk/wp-content/uploads/2012/02/2012-02-15-20.30.461.jpg"><img class="alignleft  wp-image-55" title="Conference lanyard" src="http://www.duckheads.co.uk/wp-content/uploads/2012/02/2012-02-15-20.30.461-150x150.jpg" alt="Conference lanyard" width="90" height="90" /></a>I don't consider myself a front end developer by a long stretch, however, I believe any web developer worth their salt should be versed in technologies both server and client side. Back when I started out building web content adding behaviours to a page using native JavaScript methods to manipulate the DOM was tiresome, to say the least. I'm sure we've all experienced and understand the difficulties and quirks in cross-browser compatibly. Here's a treat for you. Recently I was looking over some old code of mine and found this..</p>
+<pre>// What I used to do
+var element = document.getElementsByTagName("a");
+for (var i = 0; i &lt; element.length; i++) {
+  if (element[i].getAttribute("class") == "fw_link_external" || element[i].className == "fw_link_external") {
+    element[i].onclick = function(){
+      openExternalWindow(this);
+      return false;
+    }
+    if (!element[i].getAttribute('onclick')) {
+      element[i].setAttribute("onclick", "openExternalWindow(this); return false");
+    }
+  }
+}</pre>
+<p>As you can see I'm setting an onclick event, twice! I've no idea if there was a "better" way to do it at the time (early 2007) but this is what worked for IE6/7 and whatever the lastest version of firefox was. Looking back at it now, its just shocking. And I wrote alot of code like this, until 2009. I got playing with jQuery and it massively reduced my time / efforts to get basic behaviours up and running.</p>
+<pre>// What I'd do now
+$('a.fw_link_external').onclick(function(){openExternalWindow(this); return false;})</pre>
+<p>So when <a href="http://www.whiteoctober.co.uk/">white october</a> annouced jQuery's first UK conference in oxford I knew it would be a great opportunity to further my knowledge, see the direction its going in, what this jQuery Mobile stuff is all about and if there are any other tools / techniques that might help me along the rocky road of javascript development. I've written up here on the talks I enjoyed the most.</p>
+<h2><a href="http://www.duckheads.co.uk/wp-content/uploads/2012/02/ralph.jpg"><img class="size-full wp-image-83 alignright" title="ralph" src="http://www.duckheads.co.uk/wp-content/uploads/2012/02/ralph.jpg" alt="" width="84" height="84" /></a>Ralph Whitbeck - The state of the jQuery project</h2>
+<p><a href="http://twitter.com/RedWolves">@RedWolves</a> | <a href="http://ralphwhitbeck.com/">ralphwhitbeck.com</a> | <a href="http://speakerdeck.com/u/rwhitbeck/p/state-of-jquery-jquery-conference-2012-uk" target="_blank">slides</a></p>
+<p>Any curiousities I had about the direction of the library were satisfied in this session. Ralph started by giving a great insight into where jQuery came from, how its evolved and been divided into the three core teams it runs today (board, team, comminuty). He produced some interesting figures on the uptake of jQuery stating its <strong>used in over 54% of the top 10,000 websites</strong>. Also another thing I found interesting (and seems common place now in the open source community) is complete public transparency on any decisions made on jQuery via a <a href="http://groups.google.com/group/jquery-board-public">public board</a>. Future goals of jQuery core where outlined, the main focus being a slim down on the file size. There was also a mention (and Ralph did ask people to not misinterpret him on blogs) that there are "talks" about exploring ways to break IE6/7 into a compatibility plugin. But nothing has been planned, and clearly no decisions have been made on this. He went on to talk about the roadmap for jQuery UI and covered some of the new widgets / utilities currently in development. Listed amost these were Selectmenu, masked input, inline editing, Timepicker, Menubar, $.observable and Globalize. Some other points mentioned by Ralph were the intention to launch a new learning site for jQuery along with a new plugin site (of which he promised with backups this time).</p>
+<h2>Todd Parker - jQuery mobile keynote<a href="http://www.duckheads.co.uk/wp-content/uploads/2012/02/todd.jpg"><img class="alignright size-full wp-image-84" title="todd" src="http://www.duckheads.co.uk/wp-content/uploads/2012/02/todd.jpg" alt="" width="84" height="84" /></a></h2>
+<p><a title="twitter toddmparker" href="http://twitter.com/toddmparker">@toddparker</a> | <a title="filament group" href="http://filamentgroup.com" target="_blank">filamentgroup.com</a> | <a href="http://speakerdeck.com/u/toddparker/p/jquery-mobile-keynote-uk-conference" target="_blank">slides</a></p>
+<p>Personally I found this to be one of the most inspiring talks of the day. Todd jumped straight in and began covering the features you can expect from using the jQuery mobile library. He spoke about AJAX page transitions, and the effects available for these transitions such as fade, pop, flip, turn etc.<br />
+One of the jQuery mobile project goals is to leave no device behind with over 10 billions web enabled mobile devices out there they're aiming to encompass as many platforms as possible under one codebase. As well as supporting desktop browsers. The library is built on HTML5 web standards and visual effects will progressively enhance from one of 3 categories (A, B or C) based on the device. So a slider and button set may simply degrade to an input and a checkbox depending on the device and its capabilities.<br />
+To build a mobile web site, start by building a website. Todd demonstrated just how easy it is to enhance a standard web page with jQuery mobile. All links and forms are "ajaxified" and handled with transitions (being injected into the page). There are tools available to pre-load content, or even disbale this feature. There appears to be a very comprehensive set of tools here for the mobile developer. I don't think I was the only one satisfied in the comfort that Todd and the team have a great vision, and this library is heading firmly in the right direction.</p>
+<h2>Laurent Delcambre - Effective jQuery testing with QUnit</h2>
+<p><a title="tquila_laurent twitter" href="http://www.twitter.com/tquila_laurent" target="_blank">@tquila_laurent</a> | <a href="http://prezi.com/wulngzk4oq6f/unit-testing-javascript-with-qunit/" target="_blank">slides</a></p>
+<p>This was one of the short talks but I found it very interesting being a fan of TDD I was keen to see how well integrated its become in the JavaScript world. Laurent started off with standard justifications we've heard many times as to why we should write unit tests, before moving on to the how. Firstly it appears you'd need to create a basic HTML structure for QUnit to interact with and display test results. Once done you can begin asserting results using methods such as test(), equal(), ok(), notEqual() etc. Laurent also explained how you would go about testing asynchronous callbacks.</p>
+<pre> equals(actual, expected[, message])
+
+ test("equals test", function(){
+	equals("", 0, "equals suceeds");
+	equals("three", 3, "equals fails");
+ });</pre>
+<p>One thing Laurent mentioned was that QUnit sits ontop of jQuery which eases cross browser compatibility testing. This then made me think about the real value of using unit tests wtih javascript. Wouldn't test results potentially be skewed depending on the JavaScript engine in play (and what version). Would testing it on the few browser you have installed locally be enough? With server side technologies its easy, you download the new version, run your tests and only when they all pass do you think about updating your production machines. I wonder if something like QUnit could be used in a live environment to give a better testing scope. Obviously not to be called on each request, but maybe you could fire off a single test and log the results whenever a unique user-agent is detected. Anyway, any talk that gets me thinking is a good talk.</p>
+<p>QUnit would be a great tool to stop developers from jumping into a code base and hacking in "quick fixes". It would ensure a positive coding standard, and encourage collaboration within a team. After all, its everyone's responsibility to ensure those tests pass.</p>
+<h2>Paul Irish - App development stack for JS developers<a href="http://www.duckheads.co.uk/wp-content/uploads/2012/02/paul.jpg"><img class="alignright size-full wp-image-85" title="paul" src="http://www.duckheads.co.uk/wp-content/uploads/2012/02/paul.jpg" alt="" width="84" height="84" /></a></h2>
+<p><strong></strong><a title="paul_irish twitter" href="http://twitter.com/paul_irish" target="_blank">@paul_irish</a> | <a title="Paul Irish's Website" href="http://paulirish.com" target="_blank">paulirish.com</a> | <a href="http://dl.dropbox.com/u/39519/talks/jquk-tooling%2Bappstack/index.html" target="_blank">slides</a></p>
+<p>Paul is the kind of guy you'll go to shake hands with, and you end up bumping fists and pulling back with a firework explosion. He's animated, to say the least. But, he's a great talker and he knows his stuff. This talk was really fun, and I took away an entire list of tools paul uses on a regular basis. Paul covered the typical problem we all have when building frontend applications, they take time. Time focused on common tasks rather than on building the unique experiences we want to. To counter this there's only one solution, to arm yourself!</p>
+<p>"Smart developers work with smart tools"</p>
+<p>As I've mentioned previously I'm not a front-end developer, so was a little a overwhelemed when Paul put up a stack of 50+ tools. Although he did split the tools nicely into categories covering "Boilerplate, Authoring Abstractions, Frameworks, Iteration Workflow, Performance Tuning, Build &amp; Optimization and Deployment". The important message delivered here was not to try to use them all, but to understand what solutions they provide and find the ones that fit into your stack. The few that caught my eye that I may add to my "to-read-about" list are Coffee Script and Backbone.<br />
+Paul then went onto his google chrome bit and spoke about the upcoming features. He demonstrated the ability to use an annotation to define an uncompressed source of your compressed (minimalised) javascript, allowing you to debug your live site on readable code (pretty neat). He also demonstrated the remote debugging facility. Paul hooked up his phone and used the developer tool stack on his laptop to debug against his mobile browser.</p>
+<p><a href="http://www.duckheads.co.uk/wp-content/uploads/2012/02/download.jpg"><img class="alignleft  wp-image-80" title="Remote Debugging with chrome" src="http://www.duckheads.co.uk/wp-content/uploads/2012/02/download.jpg" alt="" width="640" height="480" /></a></p>
+<p>&nbsp;</p>
+<h2>Addy Osmani - Building large-scale applications<a href="http://www.duckheads.co.uk/wp-content/uploads/2012/02/addy.jpg"><img class="alignright size-full wp-image-86" title="addy" src="http://www.duckheads.co.uk/wp-content/uploads/2012/02/addy.jpg" alt="" width="84" height="84" /></a></h2>
+<p><a title="addy_osmani twitter" href="http://twitter.com/addy_osmani" target="_blank">@addy_osmani</a> | <a title="Addy Osmani" href="http://addyosmani.com/" target="_blank">addyosmani.com</a> | <a href="http://speakerdeck.com/u/addyosmani/p/building-decoupled-large-scale-applications-using-javascript-and-jquery" target="_blank">slides</a></p>
+<p>One thing I find myself always thinking about when writing code is scale. There are a lot of things to consider, and its very easy to start slapping in dependencies, or coupling code for the sake of a working implementation. But this is wrong, and I find I struggle when having to work with code written this way. It may take longer to write, but any experienced developer will tell you; design your components to be self-contained and independent from others. That way they become reusable and you save yourself (and others) time rebuilding for the same purpose. Addy's talk covered this point in many ways, he spoke about decoupling, promoting reusability and seperating units of code that have no dependency on each other. It was a real breath of fresh air to these practices being preached to the javascript crowd.<br />
+Addy went on to discuss what i'm going to call his "main feature" as I know it got alot of people talking in the lobby afterward. Reducing the risk of breakage. What happens when a single component fails in a list of several? Will your code continue to execute, or will it all just come to a grinding halt? I know i've certainly written javascript code in this linear fashion.</p>
+<pre>$.when($.ajax("mail.php"))
+  .then(function( ajaxArgs ){
+
+    var jqXHR = ajaxArgs[2],
+         data = jqXHR.responseText;
+
+    // Display notification and preview
+    modals.show('New Message', data);
+
+   <span style="color: #ff0000;"> // What happens if something breaks here?</span>
+
+    // Play new message sound
+    audioManager.play('newMessage');
+
+    // Update the unread message count
+    messages.increaseMessageCount('unread');
+  });</pre>
+<p>The solution, to decouple those components and use and event driven architecture to trigger them.</p>
+<pre>.when($.ajax("mail.php"))
+  .then(function( ajaxArgs ){
+
+    var jqXHR = ajaxArgs[2],
+         data = jqXHR.responseText;
+
+    // Tell the application there is a new message, share the data
+    $.publish('newMessage', data);
+
+    // Other modules can now just listen our for 'newMessage'
+  });
+$.subscribe('newMessage', ...);  // modals.show()
+
+<span style="color: #ff0000;">// How about now?</span>
+
+$.subscribe('newMessage', ...);  // audioManager.play()
+$.subscribe('newMessage', ...);  // messages.increaseMessageCount()</pre>
+<p>Using concepts such as pub / sub you can decouple your objects that are generating events from those that are reacting to them. Addy went on to demostrate how these may be handled when using jQuery custom events, callbacks or Backbone.js events. This was a really stimulating talk and got everyone thinking about how they could structure their code better. I'd advise any frontend developer to at least take 10 minutes and scroll through the slide deck from this talk.</p>

@@ -1,0 +1,90 @@
+---
+layout: post
+title: Global installation of Composer on windows
+categories: []
+tags: []
+status: publish
+type: post
+published: true
+meta:
+  _edit_last: '1'
+author:
+  login: leedavis81
+  email: leedavis81@hotmail.com
+  display_name: leedavis81
+  first_name: ''
+  last_name: ''
+---
+<p><script src="http://ajax.googleapis.com/ajax/libs/jquery/1/jquery.min.js" type="text/javascript"></script></p>
+<link rel="stylesheet" type="text/css" href="http://google-code-prettify.googlecode.com/svn/trunk/src/prettify.css"></link>
+<script src="http://google-code-prettify.googlecode.com/svn/trunk/src/prettify.js"></script>  </p>
+<style type="text/css">
+/* Pretty printing styles. Used with prettify.js. */<br />
+/* Vim sunburst theme by David Leibovic */</p>
+<p>pre .str, code .str { color: #65B042; } /* string  - green */<br />
+pre .kwd, code .kwd { color: #E28964; } /* keyword - dark pink */<br />
+pre .com, code .com { color: #AEAEAE; font-style: italic; } /* comment - gray */<br />
+pre .typ, code .typ { color: #89bdff; } /* type - light blue */<br />
+pre .lit, code .lit { color: #3387CC; } /* literal - blue */<br />
+pre .pun, code .pun { color: #fff; } /* punctuation - white */<br />
+pre .pln, code .pln { color: #fff; } /* plaintext - white */<br />
+pre .tag, code .tag { color: #89bdff; } /* html/xml tag    - light blue */<br />
+pre .atn, code .atn { color: #bdb76b; } /* html/xml attribute name  - khaki */<br />
+pre .atv, code .atv { color: #65B042; } /* html/xml attribute value - green */<br />
+pre .dec, code .dec { color: #3387CC; } /* decimal - blue */</p>
+<p>pre.prettyprint, code.prettyprint {<br />
+        background-color: #000;<br />
+        -moz-border-radius: 8px;<br />
+        -webkit-border-radius: 8px;<br />
+        -o-border-radius: 8px;<br />
+        -ms-border-radius: 8px;<br />
+        -khtml-border-radius: 8px;<br />
+        border-radius: 8px;<br />
+}</p>
+<p>pre.prettyprint {<br />
+        width: 95%;<br />
+        margin: 1em auto;<br />
+        padding: 1em !important;<br />
+        white-space: pre-wrap;<br />
+}</p>
+<p>/* Specify class=linenums on a pre to get line numbering */<br />
+ol.linenums { margin-top: 0; margin-bottom: 0; color: #AEAEAE; } /* IE indents via margin-left */<br />
+li.L0,li.L1,li.L2,li.L3,li.L5,li.L6,li.L7,li.L8 { list-style-type: none }<br />
+/* Alternate shading for lines */<br />
+li.L1,li.L3,li.L5,li.L7,li.L9 { }</p>
+<p>@media print {<br />
+  pre .str, code .str { color: #060; }<br />
+  pre .kwd, code .kwd { color: #006; font-weight: bold; }<br />
+  pre .com, code .com { color: #600; font-style: italic; }<br />
+  pre .typ, code .typ { color: #404; font-weight: bold; }<br />
+  pre .lit, code .lit { color: #044; }<br />
+  pre .pun, code .pun { color: #440; }<br />
+  pre .pln, code .pln { color: #000; }<br />
+  pre .tag, code .tag { color: #006; font-weight: bold; }<br />
+  pre .atn, code .atn { color: #404; }<br />
+  pre .atv, code .atv { color: #060; }<br />
+}<br />
+</style>
+<p>I've been tinkering with composer recently (on windows) and I noticed there was no simple way to install it system wide. Typically the composer.phar would live within the root of your project directory and so you'd manage your dependencies from there.</p>
+<p>But as I would like to manage several projects with it I thought it would be cleaner to have the composer.phar in one place. That way any updates to the composer.phar will only need to be done once. A <a title="Global installation of composer" href="https://github.com/composer/composer#global-installation-of-composer-manual">system wide installation is outlined in the documentation</a> for Linux, but there aren't any pointers for windows.</p>
+<p>So to get around problem this I created a small .bat file and copied it to the same directory that my php binary exists, accompanied with the composer.phar file this now runs from anywhere.</p>
+<p>To repeat the steps..</p>
+<ol>
+<li><strong>Open a terminal and navigate to the directory your php binary is</strong><br />
+(or any other directory that exists under your system path)<br><br></li>
+<li><strong>Run the following:</strong>
+<pre><code>php -r "eval('?&gt;'.file_get_contents('https://getcomposer.org/installer'));"</code></pre>
+<p><br><br></li>
+<li><strong>Create a composer.bat by running the following command:</strong>
+<pre><code>echo "@ECHO OFF" "php '%~dp0composer.phar' %*" &gt; composer.bat</code></pre>
+</li>
+</ol>
+<p>&nbsp;</p>
+<p>And your done (you may have to restart your terminal). Just type in "composer" and you should see the usage options.</p>
+<p>Tip: If you're using windows powershell you might get the following warning;</p>
+<p>'■@' is not recognized as an internal or external command,</p>
+<p>If that's the case simply delete the composer.bat file, create a new file, copy in the following contents and save as composer.bat:</p>
+<pre><code>@ECHO OFF
+php "%~dp0composer.phar" %*</code></pre>
+<div>For some reason powershell will prefix the outfile with a special character. No idea how to get around this :/</div>
+<p>&nbsp;</p>

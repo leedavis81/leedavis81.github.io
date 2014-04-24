@@ -1,0 +1,109 @@
+---
+layout: post
+title: Drive Forms from Doctrine Entities
+categories: []
+tags:
+- doctrine
+- form
+- php
+- zend
+status: publish
+type: post
+published: true
+meta:
+  _edit_last: '1'
+author:
+  login: leedavis81
+  email: leedavis81@hotmail.com
+  display_name: leedavis81
+  first_name: ''
+  last_name: ''
+---
+<h1>FormFactory - Driving Doctrine 1.2 / 2.x Mappings into Zend_Form objects</h1>
+<p>On a few of my previous projects I found myself creating more form classes than I'd like. And after the 30th one I figured there had to be a better way. I quickly realised that most of the elements within these forms shared similarities to the data type I would use on my database definitions. As I was using Doctrine at the time I figured I could not only drive my database from my mapping definitions, but my forms too.</p>
+<p>So the idea would be to take all of the possible data types allowed in a doctrine schematic and provide a default form element for them. So for example a <strong>string column</strong> could become a <strong>text field</strong>, or an <strong>enum </strong>could be a <strong>checkbox</strong>. Now obviously this would need to be configurable and be easily overridden with another element type when required.</p>
+<p><a href="http://www.duckheads.co.uk/wp-content/uploads/2012/03/formfactory.png"><img class="aligncenter size-full wp-image-179" title="formfactory" src="http://www.duckheads.co.uk/wp-content/uploads/2012/03/formfactory.png" alt="" width="700" height="259" /></a></p>
+<p>The plan was never to solve all my form problems, but to reduce the workload on creating the simple ones. However I found that simply providing an override configuration wasn't enough, and that I needed slightly more control over my elements. So I did two things;</p>
+<p>- created a bunch of quick configuration options such as a default value, whether its a required element or the ability to disable it all together. And,</p>
+<p>-Allowed a fall back onto Zend_Form's ini configuration, giving me a greater flexibility when required.</p>
+<p>I'm using this library in my current project but have only driven the forms using the doctrine 2.x adapter. There is some work to be done to have it drive off of doctrine 1.x mappings, and i'd also like to be able to parse a sql create file with it at some point too. The code is on github so feel free to fork and have a play. I would love to hear any feedback on any changes / issues / improvements.</p>
+<p><a title="Form Factory" href="https://github.com/leedavis81/FormFactory" target="_blank">https://github.com/leedavis81/FormFactory</a></p>
+<h2><strong>Main Features;</strong></h2>
+<h3>Use doctrine mappings to create fast flexible zend forms</h3>
+<p>FormFactory will enable to drive your forms from your Entity annotations. It uses a default configuration for each attribute of your Entity and builds a Zend Form Element from it. For example a column of type 'string' will by default become a text input. These are completely configurable, columns can be ignored or customised to quickly build the form you need. Zend Form objects are returned for further customisations if required.</p>
+<p>Example, generating a form from my User entity</p>
+<pre>$form = new FormFactory\Form('User', 'add');
+echo $form-&gt;getZendForm();</pre>
+<p>or, you can use the quick static call, taking advantage of PHP 5.3's __callStatic method</p>
+<pre>echo FormFactory\Form::AdminUser('edit');</pre>
+<h3>inherit / override config definitions from other forms</h3>
+<p>Any definitions provided for a form can be extended for other uses. for example if using ini configurations</p>
+<pre>[add]
+;...some configurations...
+[edit : add]
+; removes the password element when editing
+config.password.disabled = true;</pre>
+<h3>Add a relationship of entities to a single form</h3>
+<p>You may want to use several Entities to generate your form. By passing a relationship to the form constructor additional attributes of those Entities will be added to your form. eg</p>
+<pre>$form = new FormFactory\Form(array('User' =&gt; array('UserPassword', 'UserAddress')), 'add');
+echo $form-&gt;getZendForm();</pre>
+<h3>Allows you to fall back to a native Zend_Form configuration</h3>
+<p>If the default configuration options aren't enough, you have the power of customising your form elements using typical zend_form configurations. This is very useful for adding validators / filters / decorators to your elements.</p>
+<pre>form.elements.username.type = text
+form.elements.username.options.label = Username
+form.elements.username.options.order = 0
+form.elements.username.options.attribs.class = 'small usernameCheck'
+form.elements.username.options.required = 1
+form.elements.username.options.description = 'Must be greater than 3 characters'
+form.elements.username.options.validators.user-exists.validator = "UserExists"</pre>
+<p>Creating elements using a native Zend_Form configuration will override any default FormFactory element with the same name.</p>
+<h3>Linking data to multi type element</h3>
+<p>Multi type form elements such as select boxes, radio buttons or check boxes require populating with a set of name / values. There are currently three ways to do this;</p>
+<h4>Add link data via a config file</h4>
+<p>You can set multiple field values directly via your form configuration by passing an array of names and values. Note the length of these arrays must be identical.</p>
+<pre>config.role_id.linkData.names = Administrator, Operator
+config.role_id.linkData.values = 1, 2</pre>
+<h4>Add link data by selecting from another entity</h4>
+<p>You may have a set of Data that you want to appear in a select element. Using the FormFactory adapters this data can be pulled in and injected into you form. For example, I want my Users Entity column 'role_id' to be a select field populated with the data currently persisted for that Entity.</p>
+<pre>config.role_id.linkEntity.entityName = Role
+config.role_id.linkEntity.entityField = id
+config.role_id.linkEntity.entityFieldValue = name</pre>
+<p>You can even filter on where status is equal to 1</p>
+<pre>config.role_id.linkEntity.filters.status = 1</pre>
+<h4>Add Link data via a plugin hook</h4>
+<p>If you need to perform slightly more work to retrieve the multi field names and values you can use a plugin to do so. This class must extend the \FormFactory\Plugin\LinkData class and implement the getOptions() method like so;</p>
+<pre>class System_FormFactoryPlugin_ServiceHolidayBoard
+    extends \FormFactory\Plugin\LinkData
+{
+  public function getOptions()
+  {
+    return \Entities\Repositories\ServiceHolidayRepository::$boardNames;
+  }
+}</pre>
+<p>and set in your config like;</p>
+<pre>config.{elementName}.linkDataPlugin = My_Plugin_Class</pre>
+<h3>Has its own autoloader and bootstrapping mechanism</h3>
+<p>Library can be quickly bootstrapped by including a ClassLoader, and passing a path to the formfactory config file. for example..</p>
+<pre>require_once realpath(APPLICATION_PATH . '/../library/FormFactory/ClassLoader.php');
+$formFactory = new FormFactory\Bootstrap(realpath(APPLICATION_PATH . '/configs/form/config.ini'));</pre>
+<h3>Configure a caching mechanism for your config files</h3>
+<p>Its likely your configuration files are not going to change in a production environment, so you can pass in a caching mechanism to stop the library from having to re-read them every time a form is produced. This can be done like so;</p>
+<pre>ff.cache.frontend.name = Core;
+ff.cache.frontend.options.lifetime = 30;
+ff.cache.frontend.options.automatic_serialization = true;
+ff.cache.backend.name = Apc;</pre>
+<h3>Quick config options</h3>
+<p>Here are some of the common configurations I found myself needing when setting up simple forms.</p>
+<pre>config.{entityname}.value = {default value}
+config.{entityname}.label = {label name}
+config.{entityname}.required = true
+config.{entityname}.disabled = {true}
+config.disabled = {column1, column2, column3}</pre>
+<p>Its available now on github, have fun with it.</p>
+<p><a href="https://github.com/leedavis81/FormFactory">https://github.com/leedavis81/FormFactory</a></p>
+<h3>Requirements:</h3>
+<ol>
+<li>PHP 5.3</li>
+<li>Doctrine 1.2 / 2</li>
+<li>Zend - Config, Form</li>
+</ol>

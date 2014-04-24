@@ -1,0 +1,125 @@
+---
+layout: post
+title: Zend Paginator Example
+categories: []
+tags:
+- paginator
+- php
+- zend
+- zend-paginator
+status: publish
+type: post
+published: true
+meta:
+  _edit_last: '1'
+author:
+  login: leedavis81
+  email: leedavis81@hotmail.com
+  display_name: leedavis81
+  first_name: ''
+  last_name: ''
+---
+<p>One of the reasons why zend framework has been so popular is due to all the hard work put in to make<br />
+sure components are extremely configurable. Sure there are default behaviours, but nothing is assumed<br />
+and anything that needs to be overwritten or reconfigured can be. A strong emphasis on configuration<br />
+over convention means you'll never be lumbered with code that just can't be changed.</p>
+<p>Zend Paginator is one of the smaller components of Zend Framework that allows you to get a simple<br />
+paginator up and running on your listings or search pages in a matter of minutes. There are some<br />
+great examples in the documentation and they even throw some pagination control views at you to get<br />
+you going.</p>
+<p><a title="Zend Paginator Usage" href="http://framework.zend.com/manual/en/zend.paginator.usage.html">http://framework.zend.com/manual/en/zend.paginator.usage.html</a></p>
+<p>They demonstrate a search style paginator that allows you jump back 'n forth through your pages.</p>
+<p><a href="http://www.duckheads.co.uk/wp-content/uploads/2012/04/search-paginator.jpg"><img class="size-full wp-image-269 alignnone" title="search-paginator" src="http://www.duckheads.co.uk/wp-content/uploads/2012/04/search-paginator.jpg" alt="" width="337" height="36" /></a></p>
+<p>As well as a list item style paginator, detailing what set you were viewing and controls to jump +/-<br />
+one page, or straight to the start / end.</p>
+<p><a href="http://www.duckheads.co.uk/wp-content/uploads/2012/04/item-paginator.jpg"><img class="size-full wp-image-270 alignnone" title="item-paginator" src="http://www.duckheads.co.uk/wp-content/uploads/2012/04/item-paginator.jpg" alt="" width="337" height="40" /></a></p>
+<p>They also have a dropdown style paginator that uses javascript to jump to your desired page.<br />
+These are great, but didn't quite do what I wanted. My specification was as follows;</p>
+<ol>
+<li>Must be able to jump to the first results page at any time by clicking the first page number (1)</li>
+<li>Must be able to jump to the last results page at any time by clicking the last page number</li>
+<li>Must be able to jump forward one page</li>
+<li>Must be able to jump back one page</li>
+<li>Must show the current page the user is on</li>
+<li>Must show surrounding pages from the page the user is currently on</li>
+</ol>
+<p>And the example design was;</p>
+<p><a href="http://www.duckheads.co.uk/wp-content/uploads/2012/04/new_paginator.jpg"><img class="size-full wp-image-271 alignnone" title="new_paginator" src="http://www.duckheads.co.uk/wp-content/uploads/2012/04/new_paginator.jpg" alt="" width="328" height="42" /></a></p>
+<p>So off I went and created the required view. I quite like that it always maintains the first and last page number throughout, which in my opinion is much cleaner than having a "First" / "Last" text link. Anyway, I thought I'd share it with y'all in case you ever come into a similar requirement.</p>
+<p>Enjoy!</p>
+<pre style="padding-left: 30px;">&lt;?php if ($this-&gt;pageCount) :
+ $midRange = floor(sizeof($this-&gt;pagesInRange) / 2);
+ if (($this-&gt;current + $midRange) &lt; $this-&gt;pageCount) :
+ array_pop($this-&gt;pagesInRange);
+ $display_end = true;
+ endif; ?&gt;
+&lt;div class="paginationControl&lt;?= $this-&gt;position; ?&gt;"&gt;
+ &lt;div class="paginationControl_showing"&gt;
+ Viewing page &lt;strong class="current"&gt;&lt;?= $this-&gt;current; ?&gt;&lt;/strong&gt; of &lt;strong class="last"&gt;&lt;?= $this-&gt;last; ?&gt;&lt;/strong&gt;
+ &lt;/div&gt;
+ &lt;div class="paginationControl_pages"&gt;
+ &lt;!-- Previous page link --&gt;
+ &lt;?php if (isset($this-&gt;previous)): ?&gt;
+ &lt;a href="&lt;?php echo $this-&gt;url(array('page' =&gt; $this-&gt;previous)) . $this-&gt;query; ?&gt;" class="previous"&gt;&amp;lt; Previous&lt;/a&gt; |
+ &lt;?php else: ?&gt;
+ &lt;span class="disabled"&gt;&amp;lt; Previous&lt;/span&gt; |
+ &lt;?php endif; ?&gt;
+ &lt;?php if (($this-&gt;current - $midRange) &gt; $this-&gt;first): ?&gt;
+ &lt;?php array_shift($this-&gt;pagesInRange);?&gt;
+ &lt;a href="&lt;?php echo $this-&gt;url(array('page' =&gt; $this-&gt;first)) . $this-&gt;query; ?&gt;" &gt;&lt;?php echo $this-&gt;first ?&gt;&lt;/a&gt;... |
+ &lt;?php endif; ?&gt;
+ &lt;!-- Numbered page links --&gt;
+ &lt;?php foreach ($this-&gt;pagesInRange as $page): ?&gt;
+
+ &lt;?php if ($page != $this-&gt;current): ?&gt;
+ &lt;a href="&lt;?php echo $this-&gt;url(array('page' =&gt; $page)) . $this-&gt;query; ?&gt;" &gt;&lt;?= $page; ?&gt;&lt;/a&gt; |
+ &lt;?php else: ?&gt;
+ &lt;strong&gt;&lt;?= $page; ?&gt;&lt;/strong&gt; |
+ &lt;?php endif; ?&gt;
+ &lt;?php endforeach; ?&gt;
+ &lt;?php if (!empty($display_end)) : ?&gt;
+ ...&lt;a href="&lt;?php echo $this-&gt;url(array('page' =&gt; $this-&gt;last)) . $this-&gt;query; ?&gt;" &gt;&lt;?php echo $this-&gt;last ?&gt;&lt;/a&gt; |
+ &lt;?php endif; ?&gt;
+ &lt;!-- Next page link --&gt;
+ &lt;?php if (isset($this-&gt;next)): ?&gt;
+ &lt;a href="&lt;?php echo $this-&gt;url(array('page' =&gt; $this-&gt;next)) . $this-&gt;query; ?&gt;" class="next"&gt;Next &amp;gt;&lt;/a&gt;
+ &lt;?php else: ?&gt;
+ &lt;span class="disabled"&gt;Next &amp;gt;&lt;/span&gt;
+ &lt;?php endif; ?&gt;
+ &lt;/div&gt;
+&lt;/div&gt;
+&lt;?php endif; ?&gt;</pre>
+<p>And some CSS to accompany it;</p>
+<pre>.paginationControl {
+    padding: 10px;
+    font-family: arial;
+    font-size: 12px;
+    color: #333333;
+    height: 13px;
+}
+.paginationControl_showing {
+    float: left;
+    position: relative;
+    font-weight: bold;
+}
+.paginationControl_showing strong.current {
+    color: #a8050d;
+}
+.paginationControl_pages {
+    float: right;
+    position: relative;
+    font-weight: bold;
+    color: #494848;
+}
+
+.paginationControl_pages a {
+    color: #494848;
+}
+
+.paginationControl_pages strong {
+    color: #a8050d;
+}
+
+.paginationControl_pages .previous, .paginationControl_pages .next {
+color: #a8050d;
+}</pre>
